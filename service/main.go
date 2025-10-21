@@ -113,7 +113,10 @@ func receiveToChan(conn net.Conn) {
 				Content:    msg,
 			}
 		case msg == "/heartbeat":
-			utils.WriteData(conn, "/heartbeat\n")
+			er := utils.WriteData(conn, "/heartbeat\n")
+			if er != nil {
+				fmt.Println("服务器发送心跳出错", er)
+			}
 			continue
 		default:
 			publicMsgChan <- Message{
