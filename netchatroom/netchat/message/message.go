@@ -58,4 +58,5 @@ func ReciveMsg(conn net.Conn) (*common.Message, error) {
 		return nil, fmt.Errorf("JsonToMsg failed ,err:%w", err)
 	}
 	return message, nil
+
 }

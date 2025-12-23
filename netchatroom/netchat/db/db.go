@@ -3,6 +3,8 @@ package db
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"log"
+	"time"
 )
 
 var db *sqlx.DB
@@ -15,14 +17,22 @@ var db *sqlx.DB
 
 // 初始化连接数据库
 func InitDB() (err error) {
-	//数据库信息
-	dsn := "root:1458963@tcp(127.0.0.1:3306)/netchat"
+	//go项目数据库信息
+	//dsn := "root:1458963@tcp(127.0.0.1:3306)/netchat"
+	//部署docker后数据库信息
+	dsn := "netchat:netchat@tcp(mysql:3306)/netchat"
 	//连接数据库
-	db, err = sqlx.Connect("mysql", dsn)
-	if err != nil {
-		return fmt.Errorf("Connect failed ,err:%w", err)
+	for i := 1; i <= 10; i++ {
+		fmt.Printf("第%v次连接数据库\n", i)
+		db, err = sqlx.Connect("mysql", dsn)
+		if err == nil {
+			fmt.Println("连接数据库成功!")
+			return
+		}
+		time.Sleep(5 * time.Second)
 	}
-	return nil
+	err = fmt.Errorf("InitDB sqlx.Connect failed,err:%w", err)
+	return
 }
 
 // 查询username是否存在
@@ -44,4 +54,11 @@ func AddUser(username string, password string) error {
 		return fmt.Errorf("Exec failed,err:%w", err)
 	}
 	return nil
+}
+
+func CloseDB() {
+	err := db.Close()
+	if err != nil {
+		log.Printf("db.Close failed,err:%v\n", err)
+	}
 }

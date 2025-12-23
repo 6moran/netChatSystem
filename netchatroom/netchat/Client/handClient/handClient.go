@@ -36,8 +36,9 @@ func LoginAndRegister(C *common.Client) bool {
 			return false
 		default:
 			fmt.Println("-------欢迎访问聊天室-------")
-			fmt.Println("---------1.登录---------")
-			fmt.Println("---------2.注册---------")
+			fmt.Println("----------1.登录----------")
+			fmt.Println("----------2.注册----------")
+			fmt.Println("-------输入/quit退出-------")
 			fmt.Println("请输入你要进行的操作:")
 			n, err := KeyboardInput()
 			if err != nil {
@@ -53,6 +54,8 @@ func LoginAndRegister(C *common.Client) bool {
 			case "2":
 				Register(C)
 				continue
+			case "/quit":
+				return false
 			}
 		}
 	}
@@ -71,6 +74,9 @@ func Register(C *common.Client) {
 			fmt.Println("用户名不允许为空")
 			continue
 		}
+		if username == "/quit" {
+			break
+		}
 		fmt.Println("请输入密码:")
 		password, err := KeyboardInput()
 		if err != nil {
@@ -81,6 +87,9 @@ func Register(C *common.Client) {
 		if password == "" {
 			fmt.Println("密码不允许为空")
 			continue
+		}
+		if password == "/quit" {
+			break
 		}
 		err = message.SendMsg(C.Conn, &common.Message{
 			Sender:  C,
@@ -128,6 +137,9 @@ func Login(C *common.Client) bool {
 			fmt.Println("用户名不允许为空")
 			continue
 		}
+		if username == "/quit" {
+			return false
+		}
 		fmt.Println("请输入密码:")
 		password, err := KeyboardInput()
 		if err != nil {
@@ -138,6 +150,9 @@ func Login(C *common.Client) bool {
 		if password == "" {
 			fmt.Println("密码不允许为空")
 			continue
+		}
+		if password == "/quit" {
+			return false
 		}
 		err = message.SendMsg(C.Conn, &common.Message{
 			Sender:  C,
@@ -182,6 +197,9 @@ func ClientReceiveMsg(C *common.Client) {
 			if errors.Is(err, io.EOF) {
 				fmt.Println("您已心跳超时，服务端强制踢出...")
 				close(quitChan)
+				return
+			}
+			if strings.Contains(err.Error(), "use of closed network connection") {
 				return
 			}
 			var opErr *net.OpError
