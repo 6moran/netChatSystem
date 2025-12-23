@@ -1,6 +1,7 @@
 NetChatRoom - 基于Go的网络聊天室项目
 
 📋 项目简介
+
 NetChatRoom 是一个基于 Go 语言开发的网络聊天室系统，采用客户端-服务器架构，支持多用户在线聊天、私聊、用户管理等功能。项目使用 Docker 进行容器化部署，便于快速搭建和运行。
 
 ✨ 主要特性
@@ -26,3 +27,37 @@ NetChatRoom 是一个基于 Go 语言开发的网络聊天室系统，采用客�
 
 项目状态
 项目已完成基础功能开发，支持基本的聊天室功能，可以用于学习网络编程和 Go 语言开发。
+
+项目结构
+
+text
+
+netchatroom/
+
+├── netchat/
+
+│   ├── Server/           # 服务器端代码
+
+│   │   ├── main.go       # 服务器主程序
+
+│   │   └── handServer/   # 服务器处理逻辑
+
+│   ├── Client/           # 客户端代码
+
+│   │   ├── main.go       # 客户端主程序
+
+│   │   └── handClient/   # 客户端处理逻辑
+
+│   ├── common/           # 公共数据结构
+
+│   ├── message/          # 消息处理模块
+
+│   ├── utils/            # 工具函数
+
+│   └── db/               # 数据库操作
+
+├── docker-compose.yml    # Docker 编排文件
+
+├── init.sql             # 数据库初始化脚本
+
+└── go.mod              # Go 模块依赖
