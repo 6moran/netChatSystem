@@ -36,25 +36,25 @@ netchatroom/
 
 ├── netchat/
 
-│    ├── Server/           # 服务器端代码
+│      ├── Server/           # 服务器端代码
 
-│    │    ├── main.go       # 服务器主程序
+│      │    ├── main.go       # 服务器主程序
 
-│    │    └── handServer/   # 服务器处理逻辑
+│      │    └── handServer/   # 服务器处理逻辑
 
-│    ├── Client/           # 客户端代码
+│      ├── Client/           # 客户端代码
 
-│    │    ├── main.go       # 客户端主程序
+│      │    ├── main.go       # 客户端主程序
 
-│    │    └── handClient/   # 客户端处理逻辑
+│      │    └── handClient/   # 客户端处理逻辑
 
-│    ├── common/           # 公共数据结构
+│      ├── common/           # 公共数据结构
+  
+│      ├── message/          # 消息处理模块
 
-│    ├── message/          # 消息处理模块
+│      ├── utils/            # 工具函数
 
-│    ├── utils/            # 工具函数
-
-│    └── db/               # 数据库操作
+│      └── db/               # 数据库操作
 
 ├── docker-compose.yml    # Docker 编排文件
 
