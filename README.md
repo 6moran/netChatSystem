@@ -15,7 +15,9 @@ NetChatRoom 是一个基于 Go 语言开发的网络聊天室系统，采用客�
 
 ✅ 容器化部署：使用 Docker Compose 一键部署
 
-✅ MySQL 数据库：用户信息持久化存储
+✅ MySQL 数据库：用户信息持久化存储 
+
+✅ Redis 数据库：redis缓存缓解MySQL压力，redis流实现消息队列，支持消息确认
 
 ✅ TCP 长连接：高效稳定的网络通信
 
@@ -55,6 +57,10 @@ netchatroom/
 │      ├── utils/            # 工具函数
 
 │      └── db/               # 数据库操作
+
+│      │    ├── db           # mysql操作
+
+│      │    └── rdb          # redis操作
 
 ├── docker-compose.yml    # Docker 编排文件
 
