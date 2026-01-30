@@ -15,6 +15,34 @@ services:
       - ./mysql-init:/docker-entrypoint-initdb.d
     networks:
       - go-net
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s  # MySQL 启动较慢，需要更长时间
+
+  redis: #redis
+    image: redis:8.4.0
+    container_name: netchat-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+    networks:
+      - go-net
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 3s      # 每3秒检查一次
+      timeout: 2s       # 每次检查最多等2秒
+      retries: 10       # 连续失败10次才认为不健康
+      start_period: 5s # 给Redis 5秒启动时间
+
 
   server:   #服务端
     build:
@@ -22,7 +50,10 @@ services:
       dockerfile: Dockerfile-servers
     container_name: netchat-server
     depends_on:   #保证在mysql后面启动
-      - mysql
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     ports:
       - "8888:8888"
     networks:
@@ -48,3 +79,4 @@ networks:
 
 volumes:
   mysql-data:
+  redis-data:

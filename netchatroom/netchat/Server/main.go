@@ -29,14 +29,21 @@ func main() {
 	err = db.InitDB()
 	if err != nil {
 		log.Printf("InitDB failed,err:%v\n", err)
+		return
+	}
+	err = db.InitRDB()
+	if err != nil {
+		log.Printf("InitRDB failed,err:%v\n", err)
+		return
 	}
 
-	netchat := handServer.Server{
+	netChat := handServer.Server{
 		Clients: sync.Map{},
 		MsgChan: make(chan *common.Message, 100),
 	}
 
-	go netchat.HandleMsgChan()
+	go netChat.HandleMsgChan()
+	go netChat.HandleMsgStream()
 	for {
 		//等待客户端链接
 		conn, err := listen.Accept()
@@ -46,8 +53,9 @@ func main() {
 		}
 		//链接成功
 		go func() {
-			if C := netchat.LoginAndRegister(conn); C != nil {
-				netchat.ReceiveToChan(C)
+			if C := netChat.LoginAndRegister(conn); C != nil {
+				go netChat.ReceiveToChan(C)
+				go netChat.HandleUsernameStreamMsg(C)
 			}
 		}()
 	}

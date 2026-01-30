@@ -14,9 +14,12 @@ const (
 	Join
 	Quit
 	CheckUser
+	CheckRankList
 	PrivateMsg
 	PublicMsg
 	HeartMsg
+	PublicHistory
+	PrivateHistory
 )
 
 func MsgToJson(message *common.Message) (string, error) {

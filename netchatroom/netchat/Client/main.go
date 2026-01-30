@@ -11,9 +11,9 @@ import (
 
 func main() {
 	//go项目登入服务器
-	//conn, err := net.DialTimeout("tcp", "0.0.0.0:8888", 3*time.Second)
-	//部署docker后项目登入服务器
-	conn, err := net.DialTimeout("tcp", "netchat-server:8888", 3*time.Second)
+	conn, err := net.DialTimeout("tcp", "0.0.0.0:8888", 3*time.Second)
+	////部署docker后项目登入服务器
+	//conn, err := net.DialTimeout("tcp", "netchat-server:8888", 3*time.Second)
 	if err != nil {
 		if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
 			fmt.Println("连接超时...")

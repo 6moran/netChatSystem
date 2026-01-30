@@ -10,6 +10,7 @@ import (
 	"netchatroom/netchat/common"
 	"netchatroom/netchat/message"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -19,7 +20,7 @@ var (
 	quitChan = make(chan struct{})
 )
 
-// 键盘输入函数
+// KeyboardInput 键盘输入函数
 func KeyboardInput() (string, error) {
 	msg, err := reader.ReadString('\n')
 	if err != nil {
@@ -28,7 +29,7 @@ func KeyboardInput() (string, error) {
 	return strings.TrimSpace(msg), nil
 }
 
-// 登录/注册处理
+// LoginAndRegister 登录/注册处理
 func LoginAndRegister(C *common.Client) bool {
 	for {
 		select {
@@ -110,16 +111,16 @@ func Register(C *common.Client) {
 			continue
 		}
 
-		reciveMsg, err := message.ReciveMsg(C.Conn)
+		receiveMsg, err := message.ReciveMsg(C.Conn)
 		if err != nil {
 			log.Printf("Register ReciveMsg failed ,err:%v\n", err)
 			continue
 		}
-		if reciveMsg.Content == "ok" {
+		if receiveMsg.Content == "ok" {
 			fmt.Println("注册成功!")
 			return
 		} else {
-			fmt.Println(reciveMsg.Content)
+			fmt.Println(receiveMsg.Content)
 			return
 		}
 	}
@@ -173,23 +174,23 @@ func Login(C *common.Client) bool {
 			continue
 		}
 
-		reciveMsg, err := message.ReciveMsg(C.Conn)
+		receiveMsg, err := message.ReciveMsg(C.Conn)
 		if err != nil {
 			log.Printf("Login ReciveMsg failed ,err:%v\n", err)
 			continue
 		}
-		if reciveMsg.Content == "ok" {
+		if receiveMsg.Content == "ok" {
 			C.UserName = username
 			fmt.Println("登录成功!")
 			return true
 		} else {
-			fmt.Println(reciveMsg.Content)
+			fmt.Println(receiveMsg.Content)
 			return false
 		}
 	}
 }
 
-// 用户循环接收服务端发送的信息
+// ClientReceiveMsg 用户循环接收服务端发送的信息
 func ClientReceiveMsg(C *common.Client) {
 	for {
 		msg, err := message.ReciveMsg(C.Conn)
@@ -212,15 +213,24 @@ func ClientReceiveMsg(C *common.Client) {
 				}
 			}
 			log.Printf("ClientReceiveMsg ReciveMsg failed,err:%v\n", err)
-			return
+			continue
 		}
-		if msg.Type != message.HeartMsg {
+		switch msg.Type {
+		case message.HeartMsg:
+			continue
+		case message.CheckRankList:
+			fallthrough
+		case message.PublicHistory:
+			fallthrough
+		case message.PrivateHistory:
+			fmt.Print(msg.Content)
+		default:
 			fmt.Println(msg.Content)
 		}
 	}
 }
 
-// 心跳检测
+// SendHeartbeat 心跳检测
 func SendHeartbeat(C *common.Client) {
 	ticker := time.NewTicker(20 * time.Second) // 20秒发送一次
 	defer ticker.Stop()
@@ -245,7 +255,7 @@ func SendHeartbeat(C *common.Client) {
 	}
 }
 
-// 登录后主进程
+// HandleClient 登录后主进程
 func HandleClient(C *common.Client) {
 	fmt.Println("-------欢迎加入聊天室-------")
 	fmt.Println("-----输入/help查看所有指令-----")
@@ -273,6 +283,9 @@ func HandleClient(C *common.Client) {
 				fmt.Println("/quit--退出聊天室")
 				fmt.Println("/checkUser--查看在线用户")
 				fmt.Println("/chat 用户名:消息--私聊用户")
+				fmt.Println("/history n--查看n条群聊历史消息")
+				fmt.Println("/history n 用户名--查看与该用户的n条私聊历史消息")
+				fmt.Println("/checkRankList--查看活跃度排行榜")
 			case input == "/quit":
 				err := message.SendMsg(C.Conn, &common.Message{
 					Sender: C,
@@ -315,6 +328,42 @@ func HandleClient(C *common.Client) {
 				})
 				if err != nil {
 					log.Printf("HandleClient sendMsg chat failed,err:%v\n", err)
+				}
+			case strings.HasPrefix(input, "/history"):
+				result := strings.SplitN(input, " ", 3)
+				if len(result) == 2 {
+					err := message.SendMsg(C.Conn, &common.Message{
+						Sender:  C,
+						Type:    message.PublicHistory,
+						Content: result[1],
+					})
+					if err != nil {
+						log.Printf("HandleClient sendMsg PublicHistory failed,err:%v\n", err)
+					}
+				} else if len(result) == 3 {
+					if _, err := strconv.Atoi(result[1]); err != nil {
+						fmt.Println("查看历史信息格式有误，请重新输入...")
+						continue
+					}
+					err := message.SendMsg(C.Conn, &common.Message{
+						Sender:  C,
+						Type:    message.PrivateHistory,
+						Content: result[1],
+						To:      result[2],
+					})
+					if err != nil {
+						log.Printf("HandleClient sendMsg PrivateHistory failed,err:%v\n", err)
+					}
+				} else {
+					fmt.Println("查看历史信息格式有误，请重新输入...")
+				}
+			case input == "/checkRankList":
+				err := message.SendMsg(C.Conn, &common.Message{
+					Sender: C,
+					Type:   message.CheckRankList,
+				})
+				if err != nil {
+					log.Printf("HandleClient sendMsg checkRankList failed,err:%v\n", err)
 				}
 			case strings.HasPrefix(input, "/"):
 				fmt.Println("指令输入错误，请检查输入...")
