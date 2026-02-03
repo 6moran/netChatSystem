@@ -1,0 +1,39 @@
+#构建阶段
+#基于官方Golang1.25.1版本的镜像
+#AS给该镜像进行命名，名称为"builder"
+FROM golang:1.25.1 AS builder
+
+#定义容器内部的工作目录为/app
+WORKDIR /app
+
+#设置Go模块代理，加速依赖下载
+ENV GOPROXY=https://goproxy.cn,direct
+
+#注意，这里的COPY前面的路径是build时的上下文目录，而不是 Dockerfile 所在目录。
+#单独拷贝go依赖文件，防止因源代码的小改动而重新构建依赖
+COPY go.mod go.sum ./
+RUN go mod download
+
+#拷贝整个源代码
+COPY . .
+
+#编译Client程序
+#CGO_ENABLED=0表示禁用CGO，生成纯静态的二进制。
+#目标系统：Linux     架构：amd64
+#把app/netchat/Client目录编译为可执行文件client
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o client ./netchat/Client
+
+#运行阶段
+#这里使用轻量化的alpine镜像而不用golang镜像
+FROM alpine:latest
+
+#设置工作目录
+WORKDIR /app
+
+#从构建阶段拷贝编译好的client文件
+COPY --from=builder /app/client ./
+
+
+
+#启动时执行client文件
+CMD ["./client"]
