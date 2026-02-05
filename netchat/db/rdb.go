@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/redis/go-redis/v9"
+	"log"
 	"slices"
 	"strings"
 	"time"
@@ -30,7 +31,6 @@ func InitRDB() (err error) {
 		Password: "", //没有密码
 		DB:       0,  //默认数据库0
 	})
-
 	////docker部署时的redis连接
 	//rdb = redis.NewClient(&redis.Options{
 	//	Addr:     "redis:6379",
@@ -53,6 +53,14 @@ func InitRDB() (err error) {
 		return
 	}
 	return
+}
+
+// CloseRDB 关闭redis
+func CloseRDB() {
+	err := rdb.Close()
+	if err != nil {
+		log.Printf("rdb.Close failed,err:%v\n", err)
+	}
 }
 
 // SetUser 设置键值对

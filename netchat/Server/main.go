@@ -25,6 +25,7 @@ func main() {
 			log.Printf("listen.Close failed,err:%v\n", listenErr)
 		}
 		db.CloseDB()
+		db.CloseRDB()
 	}()
 	err = db.InitDB()
 	if err != nil {
